@@ -1,5 +1,14 @@
-import { Body, Controller, Get, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo-dto';
+import { UpdateTodoDto } from './dto/update-todo-dto';
 import { TodoService } from './todo.service';
 
 @Controller('todo')
@@ -37,6 +46,21 @@ export class TodoController {
     return {
       status: HttpStatus.CREATED,
       message: 'todo CREATED successfuly !!',
+      data: result,
+    };
+  }
+
+  @Patch('/update-todo/:id')
+  async updateTodo(
+    @Param('id') id: number,
+    @Body() updatetodoDto: UpdateTodoDto,
+  ) {
+    const todoId = +id;
+
+    const result = await this.todoServices.updateTodo(todoId, updatetodoDto);
+    return {
+      status: HttpStatus.CREATED,
+      message: 'todo updated  successfuly !!',
       data: result,
     };
   }

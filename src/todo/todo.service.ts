@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTodoDto } from './dto/create-todo-dto';
+import { UpdateTodoDto } from './dto/update-todo-dto';
 import { TTodo } from './todo.interface';
 
 const FakeTodos: TTodo[] = [
@@ -127,6 +128,22 @@ export class TodoService {
       return result;
     } catch (error) {
       throw new Error('Failed to create todo in database');
+    }
+  }
+
+  // ! for updating a todo
+  async updateTodo(todoId: number, payload: UpdateTodoDto) {
+    await this.getSingleTodo(todoId);
+
+    try {
+      const result = await this.prisma.todoModel.update({
+        where: { id: todoId },
+        data: { ...payload },
+      });
+
+      return result;
+    } catch (error) {
+      throw new Error('Failed to update todo in database');
     }
   }
 
