@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateTodoDto } from './dto/create-todo-dto';
 import { TTodo } from './todo.interface';
 
 const FakeTodos: TTodo[] = [
@@ -76,16 +78,56 @@ const FakeTodos: TTodo[] = [
 
 @Injectable()
 export class TodoService {
+  constructor(private prisma: PrismaService) {}
+
   // ! for getting all todos
-  getAllTodos() {
-    return FakeTodos;
+  async getAllTodos() {
+    try {
+      const result = await this.prisma.todoModel.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      return result;
+    } catch (error) {
+      throw new Error('Failed to fetch todos from database');
+    }
   }
 
   //   !for getting single todo
-  getSingleTodo(todoId: number) {
-    const result = FakeTodos.filter((todo) => todo?.id === todoId);
+  async getSingleTodo(todoId: number) {
+    try {
+      const result = await this.prisma.todoModel.findUnique({
+        where: { id: todoId },
+      });
 
-    return result;
+      if (!result) {
+        throw new NotFoundException(`Todo with ID ${todoId} not found`);
+      }
+
+      return result;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new Error('Failed to fetch todo from database');
+    }
+  }
+
+  // ! for creating new todo
+  async craeteTodo(payload: CreateTodoDto) {
+    try {
+      const result = await this.prisma.todoModel.create({
+        data: {
+          ...payload,
+        },
+      });
+
+      return result;
+    } catch (error) {
+      throw new Error('Failed to create todo in database');
+    }
   }
 
   //
